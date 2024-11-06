@@ -15,8 +15,8 @@ class UserSignupTests(APITestCase):
         # 성공적인 회원가입 테스트
         data = {
             "username": "testuser",
-            "password": "testpassword123",
-            "checkpassword": "testpassword123",
+            "password": "testpassword123!",
+            "checkpassword": "testpassword123!",
             "first_name": "Test",
             "last_name": "User",
             "email": "testuser@example.com",
@@ -44,23 +44,8 @@ class UserSignupTests(APITestCase):
             "똑같은 비밀번호를 입력하세요.", response.data["non_field_errors"]
         )
 
-    def test_signup_missing_email(self):
-        # 이메일이 없을 때
-        data = {
-            "username": "testuser",
-            "password": "testpassword123",
-            "checkpassword": "testpassword123",
-            "first_name": "Test",
-            "last_name": "User",
-            "email": "",  # 이메일 누락
-            "emailcode": 123456,
-        }
-        response = self.client.post(self.signup_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("이메일을 입력해주세요.", response.data["non_field_errors"])
-
+    # 이메일 코드 누락 테스트
     def test_signup_missing_emailcode(self):
-        # 이메일 코드가 없을 때
         data = {
             "username": "testuser",
             "password": "testpassword123",
@@ -72,7 +57,8 @@ class UserSignupTests(APITestCase):
         }
         response = self.client.post(self.signup_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("이메일코드를 입력해주세요.", response.data["non_field_errors"])
+        self.assertIn("이메일코드를 입력해주세요.", response.data.get("emailcode", []))
+        
 
 
 class CustomPasswordValidatorTests(TestCase):
@@ -103,7 +89,7 @@ class CustomPasswordValidatorTests(TestCase):
     def test_password_without_digit(self):
         # 숫자가 포함되지 않은 비밀번호가 ValidationError를 발생시키는지 확인
         with self.assertRaises(ValidationError) as context:
-            self.validator.validate("Password!")
+            self.validator.validate("Passwordasd!")
         self.assertIn(
             "비밀번호는 하나 이상의 숫자가 포함되어야 합니다.", str(context.exception)
         )

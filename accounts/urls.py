@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import TokenBlacklistView, TokenObtainPairVi
 from . import views
 
 urlpatterns = [
-    path("signup/", views.UserCreateView.as_view(), name="user-signup"),
-    path("login/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("logout/", TokenBlacklistView.as_view(), name="logout"),
+    path("signup", views.UserCreateView.as_view(), name="user-signup"),
+    path("login", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("logout", TokenBlacklistView.as_view(), name="logout"),
 ]

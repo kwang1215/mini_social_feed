@@ -33,14 +33,14 @@ class LikeAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        product = get_object_or_404(Product, pk=pk)
+        article = get_object_or_404(Article, pk=pk)
 
         # 이미 좋아요한 경우 삭제, 그렇지 않으면 추가
-        if request.user in product.likes.all():
-            product.likes.remove(request.user)
+        if request.user in article.likes.all():
+            article.likes.remove(request.user)
             message = "찜하기 취소했습니다."
         else:
-            product.likes.add(request.user)
+            article.likes.add(request.user)
             message = "찜하기 했습니다."
 
         return Response({"message": message}, status=200)

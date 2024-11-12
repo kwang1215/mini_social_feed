@@ -19,12 +19,18 @@ class Hashtag(models.Model):
 
 
 class Article(models.Model):
-    CHOICE_PRODUCT = ["facebook", "twitter", "instagram", "threads"]
+    CHOICE_PRODUCT = [
+    ("facebook", "Facebook"),
+    ("twitter", "Twitter"),
+    ("instagram", "Instagram"),
+    ("threads", "Threads"),
+]
     type = models.CharField(max_length=50, choices=CHOICE_PRODUCT, default="type")
     title = models.CharField(max_length=50)
     content = models.TextField()
     hashtags = models.ManyToManyField(Hashtag, related_name="articles", blank=True)
     view_count = models.PositiveIntegerField(blank=True, default=0)
+    likes = models.ManyToManyField(User, related_name="likes_articles", blank=True)
     like_count = models.PositiveIntegerField(blank=True, default=0)
     share_count = models.PositiveIntegerField(blank=True, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -32,3 +38,29 @@ class Article(models.Model):
 
     def __str__(self):
         return f"User:{self.author} (Status:{self.status})"
+
+    def like_article(self, user):
+        if not self.likes.filter(id=user.id).exists():
+            self.likes.add(user)
+            self.like_count += 1
+            self.save()
+
+    def unlike_article(self, user):
+        if self.likes.filter(id=user.id).exists():
+            self.likes.remove(user)
+            self.like_count -= 1
+            self.save()
+
+
+class ArticleShare(models.Model):
+    article = models.ForeignKey(
+        Article, related_name="shares", on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        User, related_name="shared_articles", on_delete=models.CASCADE
+    )
+    platform = models.CharField(max_length=50, choices=Article.CHOICE_PRODUCT)
+    shared_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} shared {self.article.title} on {self.platform}"

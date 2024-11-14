@@ -18,15 +18,8 @@ from .serializers import ArticleListSerializer
 class ArticleListAPIView(ListAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleListSerializer
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = ArticleFilter
-    ordering_fields = [
-        "created_at",
-        "updated_at",
-        "like_count",
-        "share_count",
-        "view_count",
-    ]
+
 
 
 class LikeAPIView(APIView):
@@ -38,9 +31,9 @@ class LikeAPIView(APIView):
         # 이미 좋아요한 경우 삭제, 그렇지 않으면 추가
         if request.user in article.likes.all():
             article.likes.remove(request.user)
-            message = "찜하기 취소했습니다."
+            # message = "찜하기 취소했습니다."
         else:
             article.likes.add(request.user)
-            message = "찜하기 했습니다."
+            # message = "찜하기 했습니다."
 
         return Response({"message": message}, status=200)

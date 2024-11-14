@@ -1,13 +1,11 @@
 from django.conf import settings
-from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
-from rest_framework.validators import UniqueValidator
-from django.core.validators import RegexValidator
-
-from .models import User
 from django.core.validators import RegexValidator
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
+from .models import User
 
 # Custom RegexValidator for password validation
 password_regex_validator = RegexValidator(
@@ -47,7 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("check_password", None)
         validated_data.pop("email_code", None)
-        
+
         user = User.objects.create_user(**validated_data)
         user.set_password(validated_data["password"])
         user.save()

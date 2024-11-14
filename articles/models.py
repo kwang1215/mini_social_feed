@@ -18,14 +18,16 @@ class Hashtag(models.Model):
             )
 
 
+class ArticleType(models.TextChoices):
+    FACEBOOK = 'Facebook',
+    TWITTER = 'Twitter',
+    INSTAGRAM = 'Instagram',
+    THREADS = 'Threads'
+
+
+
 class Article(models.Model):
-    CHOICE_PRODUCT = [
-    ("facebook", "Facebook"),
-    ("twitter", "Twitter"),
-    ("instagram", "Instagram"),
-    ("threads", "Threads"),
-]
-    type = models.CharField(max_length=50, choices=CHOICE_PRODUCT, default="type")
+    type = models.CharField(max_length=50, default="type")
     title = models.CharField(max_length=50)
     content = models.TextField()
     hashtags = models.ManyToManyField(Hashtag, related_name="articles", blank=True)
@@ -59,7 +61,7 @@ class ArticleShare(models.Model):
     user = models.ForeignKey(
         User, related_name="shared_articles", on_delete=models.CASCADE
     )
-    platform = models.CharField(max_length=50, choices=Article.CHOICE_PRODUCT)
+    platform = models.CharField(max_length=50, choices=ArticleType)
     shared_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

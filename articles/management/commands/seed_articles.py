@@ -1,13 +1,15 @@
 from django.core.management.base import BaseCommand
-from articles.models import Article, Hashtag
+from articles.models import Article, Hashtag, ArticleTypeModel
 from accounts.models import User
 import random
+
+# 동작 방법 python manage.py seed_articles
 
 class Command(BaseCommand):
     help = 'Generate diverse sample data for Article, Hashtag, and User models'
 
     def handle(self, *args, **kwargs):
-        # 다채로운 해시태그 생성
+        # 다양한 해시태그 생성
         hashtag_names = [
             "맛집", "여행", "카페", "운동", "기술", "개발", "독서", "음악", "영화", "자연",
             "패션", "뷰티", "사진", "요리", "건강", "취미", "공부", "일상", "게임", "사진",
@@ -15,7 +17,7 @@ class Command(BaseCommand):
         ]
         hashtag_objs = [Hashtag.objects.get_or_create(name=tag)[0] for tag in hashtag_names]
         
-        # 샘플 유저 5명 생성
+        # 샘플 유저 생성
         usernames = ["user1", "user2", "user3", "user4", "user5"]
         users = []
         for username in usernames:
@@ -28,7 +30,17 @@ class Command(BaseCommand):
                 user.save()
             users.append(user)
 
-        # 다양한 제목과 내용 템플릿
+        # ArticleTypeModel 데이터 생성 (Facebook, Twitter, Instagram, Threads)
+        article_types = ["facebook", "twitter", "instagram", "threads"]
+        article_type_objs = {}
+        for type_name in article_types:
+            article_type_obj, _ = ArticleTypeModel.objects.get_or_create(
+                name=type_name,
+                defaults={"description": f"{type_name.capitalize()} article type"}
+            )
+            article_type_objs[type_name] = article_type_obj
+
+        # 제목과 내용 템플릿
         titles = [
             "오늘의 일상", "멋진 하루", "알아두면 좋은 팁", "나만의 비밀장소", "최고의 카페", "운동 루틴 공개",
             "기술 트렌드", "개발자의 삶", "주말 영화 추천", "자연의 아름다움", "여름 휴가 계획", "행복한 순간",
@@ -49,14 +61,15 @@ class Command(BaseCommand):
             "유익한 정보를 공유하다.", "매일 작은 행복을 찾는다."
         ]
 
-        # 50개의 샘플 Article 데이터 생성
+        # 30개의 샘플 Article 데이터 생성
         for i in range(30):
             title = random.choice(titles)
             content = f"{random.choice(contents)} 더 많은 이야기는 다음 기회에!"
+            article_type = random.choice(list(article_type_objs.values()))
             article = Article.objects.create(
                 title=title,
                 content=content,
-                type=random.choice(["facebook", "twitter", "instagram", "threads"]),
+                type=article_type,
                 view_count=random.randint(0, 100),
                 like_count=random.randint(0, 50),
                 share_count=random.randint(0, 10)
@@ -65,4 +78,4 @@ class Command(BaseCommand):
             article.hashtags.set(random.sample(hashtag_objs, k=random.randint(1, 5)))
             article.save()
 
-        self.stdout.write(self.style.SUCCESS("Successfully created 5 users, 30 diverse sample articles, and hashtags"))
+        self.stdout.write(self.style.SUCCESS("Successfully created sample data: 5 users, 30 articles, and multiple hashtags."))

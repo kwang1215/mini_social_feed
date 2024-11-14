@@ -1,6 +1,13 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.mixins import (
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+)
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
@@ -11,7 +18,12 @@ from rest_framework.views import APIView
 
 from .filters import ArticleFilter
 from .models import Article
-from .serializers import ArticleDetailSerializer, ArticleListSerializer
+from .serializers import (
+    ArticleDetailSerializer,
+    ArticleLikeSerializer,
+    ArticleListSerializer,
+    ArticleShareSerializer,
+)
 
 
 class ArticleListAPIView(ListAPIView):
@@ -20,26 +32,55 @@ class ArticleListAPIView(ListAPIView):
     filterset_class = ArticleFilter
 
 
-class ArticleDetailAPIView(APIView):
-    def get(self, request, pk, format=None):
-        article = get_object_or_404(Article, pk=pk)
-        article.increase_view_count(request)
-        serializer = ArticleDetailSerializer(article)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class ArticleDetailAPIView(RetrieveAPIView):
+    queryset = Article.objects.all()
+    serializer_class = ArticleDetailSerializer
+
+    def get_object(self):
+        object = super().get_object()
+        object.increase_view_count(self.request)
+        return object
 
 
-class LikeAPIView(APIView):
+class ArticleLikeAPIView(GenericAPIView):
+    queryset = Article.objects.all()
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, pk):
-        article = get_object_or_404(Article, pk=pk)
+    def post(self, request, *args, **kwargs):
+        return self.perform_act(
+            request, act="like", response_status=status.HTTP_201_CREATED
+        )
 
-        # 이미 좋아요한 경우 삭제, 그렇지 않으면 추가
-        if request.user in article.likes.all():
-            article.likes.remove(request.user)
-            # message = "찜하기 취소했습니다."
-        else:
-            article.likes.add(request.user)
-            # message = "찜하기 했습니다."
+    def delete(self, request, *args, **kwargs):
+        return self.perform_act(
+            request, act="unlike", response_status=status.HTTP_204_NO_CONTENT
+        )
 
-        return Response({"message": message}, status=200)
+    def perform_act(self, request, act, response_status):
+        article = self.get_object()
+        serializer = ArticleLikeSerializer(
+            article, context={"request": request}, act=act
+        )
+        return Response(serializer.data, status=response_status)
+
+
+class ArticleShareAPIView(GenericAPIView):
+    queryset = Article.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        return self.perform_act(
+            request, act="share", response_status=status.HTTP_201_CREATED
+        )
+
+    def delete(self, request, *args, **kwargs):
+        return self.perform_act(
+            request, act="unshare", response_status=status.HTTP_204_NO_CONTENT
+        )
+
+    def perform_act(self, request, act, response_status):
+        article = self.get_object()
+        serializer = ArticleShareSerializer(
+            article, context={"request": request}, act=act
+        )
+        return Response(serializer.data, status=response_status)

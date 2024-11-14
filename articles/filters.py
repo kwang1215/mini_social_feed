@@ -6,14 +6,12 @@ from .models import Article, ArticleType
 
 class ArticleFilter(filters.FilterSet):
     hashtag = filters.CharFilter(field_name="hashtags__name", lookup_expr="exact")
-    type = filters.CharFilter(field_name="type", lookup_expr="exact")
+    type = filters.ChoiceFilter(choices=ArticleType.choices, field_name="type", lookup_expr="exact")
     search = filters.CharFilter(method="filter_search")
     order_by = filters.OrderingFilter(
         fields=["created_at", "updated_at", "like_count", "share_count", "view_count"]
     )
-    type = filters.ChoiceFilter(
-        field_class=ArticleType.choices
-    )
+
 
     class Meta:
         model = Article

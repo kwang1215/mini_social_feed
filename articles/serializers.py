@@ -1,3 +1,4 @@
+from hitcount.models import HitCount
 from rest_framework import serializers
 
 from .models import Article, Hashtag
@@ -35,21 +36,9 @@ class ArticleListSerializer(serializers.ModelSerializer):
 
 
 # [상품 상세 시리얼라이저] 상품의 상세 정보와 리뷰 정보 반환
-class ProductDetailSerializer(serializers.ModelSerializer):
+class ArticleDetailSerializer(serializers.ModelSerializer):
     hashtag = HashtagSerializer(many=True, source="tags", required=False)
-    author = serializers.StringRelatedField()
 
     class Meta:
         model = Article
-        fields = (
-            "id",
-            "type",
-            "title",
-            "content",
-            "hashtags",
-            "view_count",
-            "like_count",
-            "share_count",
-            "created_at",
-            "updated_at",
-        )
+        fields = "__all__"

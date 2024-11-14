@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter
+from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import (
     AllowAny,
@@ -12,7 +11,7 @@ from rest_framework.views import APIView
 
 from .filters import ArticleFilter
 from .models import Article
-from .serializers import ArticleListSerializer
+from .serializers import ArticleDetailSerializer, ArticleListSerializer
 
 
 class ArticleListAPIView(ListAPIView):
@@ -20,6 +19,13 @@ class ArticleListAPIView(ListAPIView):
     serializer_class = ArticleListSerializer
     filterset_class = ArticleFilter
 
+
+class ArticleDetailAPIView(APIView):
+    def get(self, request, pk, format=None):
+        article = get_object_or_404(Article, pk=pk)
+        article.increase_view_count(request)
+        serializer = ArticleDetailSerializer(article)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class LikeAPIView(APIView):

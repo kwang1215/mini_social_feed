@@ -1,5 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from hitcount.models import HitCount
+from hitcount.views import HitCountMixin
 
 from accounts.models import User
 
@@ -19,14 +21,13 @@ class Hashtag(models.Model):
 
 
 class ArticleType(models.TextChoices):
-    FACEBOOK = 'Facebook',
-    TWITTER = 'Twitter',
-    INSTAGRAM = 'Instagram',
-    THREADS = 'Threads'
+    FACEBOOK = ("Facebook",)
+    TWITTER = ("Twitter",)
+    INSTAGRAM = ("Instagram",)
+    THREADS = "Threads"
 
 
-
-class Article(models.Model):
+class Article(models.Model, HitCountMixin):
     type = models.CharField(max_length=50, default="type")
     title = models.CharField(max_length=50)
     content = models.TextField()
@@ -39,7 +40,14 @@ class Article(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"User:{self.author} (Status:{self.status})"
+        return f"User:{self.title}"
+
+    def increase_view_count(self, request):
+        hit_count = HitCount.objects.get_for_object(self)
+        hit_count.hits += 1
+        hit_count.save()
+        self.view_count = hit_count.hits
+        self.save()
 
     def like_article(self, user):
         if not self.likes.filter(id=user.id).exists():

@@ -86,17 +86,3 @@ class Article(models.Model, HitCountMixin):
             self.shares.remove(user)
             self.share_count -= 1
             self.save()
-
-            
-# class ArticleShare(models.Model):
-#     article = models.ForeignKey(
-#         Article, related_name="shares", on_delete=models.CASCADE
-#     )
-#     user = models.ForeignKey(
-#         User, related_name="shared_articles", on_delete=models.CASCADE
-#     )
-#     platform = models.CharField(max_length=50, choices=ArticleType)
-#     shared_at = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return f"{self.user.username} shared {self.article.title} on {self.platform}"

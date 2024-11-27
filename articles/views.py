@@ -42,7 +42,7 @@ class ArticleDetailAPIView(RetrieveAPIView):
         return object
 
 
-class ArticleLikeAPIView(GenericAPIView):
+class ArticleLikeAPIView(GenericAPIView, CreateModelMixin, DestroyModelMixin):
     queryset = Article.objects.all()
     permission_classes = [IsAuthenticated]
 
@@ -64,7 +64,7 @@ class ArticleLikeAPIView(GenericAPIView):
         return Response(serializer.data, status=response_status)
 
 
-class ArticleShareAPIView(GenericAPIView):
+class ArticleShareAPIView(GenericAPIView, CreateModelMixin, DestroyModelMixin):
     queryset = Article.objects.all()
     permission_classes = [IsAuthenticated]
 
